@@ -1,23 +1,14 @@
-@media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .navbar nav {
-        margin-top: 10px;
-    }
-}
-
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgb(255, 247, 170);
+    background: rgb(201, 193, 121);
     color: rgb(0, 0, 0);
     padding: 10px 25px;
     margin: 15px;
     border-radius: 50px;
+    -webkit-mask: linear-gradient(transparent, white);
+    mask: linear-gradient(transparent, white);
 }
 
 .logo {
@@ -83,27 +74,22 @@ footer:hover {
 .dashboard-container {
     width: 90%;
     max-width: 600px;
-    background: var(--glass);
-    backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 2rem;
     margin: 2rem auto;
-    background-color: rgb(194, 167, 134);
+    background-color: rgb(228, 205, 176);
+    display: inline-block;
+    font-family: Arial, sans-serif;
+    font-style: italic;
     display: inline-block;
 }
 
-.search-section {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 2rem;
-}
-
-.text {
-    padding: 20px;
+.city-input {
+    padding: 50px;
     border: none;
     border-radius: 16px;
     background-color: white;
-    display: block;
+    display: inline-block;
 }
 
 button {
