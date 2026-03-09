@@ -108,11 +108,18 @@ button:hover {
 }
 
 .Search {
-    padding: 8px;
-    border-radius: 10px;
-    border-color: 1px solid;
+    padding: 10px;
+    border-radius: 15px;
     display: inline-block;
-    width: auto;
+    width: 230px;
+    outline: none;
+    margin-right: 8px;
+}
+
+.Search:hover {
+    transition: 0.4s;
+    transform: translateY(-2px);
+    transition: 0.4s ease;
 }
 
 .hidden {
