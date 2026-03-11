@@ -59,18 +59,23 @@
     transition: 0.3s ease;
 }
 
-.themeToggle {
-    padding: 12px 20px;
+#themeToggle {
     border: none;
     border-radius: 8px;
-    background: var(--primary);
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
+    color: rgb(0, 0, 0);
     display: inline-block;
 }
 
-
+#themeToggle:hover {
+    cursor: pointer;
+    transition: 0.3s ease;
+    padding: 10px;
+    border-radius: 15px;
+    position: sticky;
+    background-color: #37a74f;
+    transform: scale(1.08) translateY(-3px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
 
 :root {
     --primary: #4a90e2;
