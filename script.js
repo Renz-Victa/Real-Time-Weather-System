@@ -1,4 +1,4 @@
-const API_KEY = 'a2ed6acd213609ad23e86b3fb2196c02'; 
+const API_KEY = '';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 const cityInput = document.getElementById('city-input');
@@ -23,22 +23,22 @@ window.addEventListener('load', () => {
 
 async function getWeather(city) {
     if (!city) return;
-    
+
     try {
         errorMessage.classList.add('hidden');
-        
+
         const weatherRes = await fetch(`${BASE_URL}/weather?q=${city}&units=metric&appid=${API_KEY}`);
         if (!weatherRes.ok) throw new Error('City not found');
         const weatherData = await weatherRes.json();
-        
+
         const forecastRes = await fetch(`${BASE_URL}/forecast?q=${city}&units=metric&appid=${API_KEY}`);
         const forecastData = await forecastRes.json();
 
         updateCurrentWeather(weatherData);
         updateForecast(forecastData.list);
-        
+
         localStorage.setItem('lastCity', city);
-        
+
     } catch (error) {
         showError(error.message);
     }
@@ -54,13 +54,13 @@ function updateCurrentWeather(data) {
     document.getElementById('description').textContent = data.weather[0].description;
     document.getElementById('humidity').textContent = `${data.main.humidity}%`;
     document.getElementById('wind-speed').textContent = `${data.wind.speed} m/s`;
-    
+
     const iconCode = data.weather[0].icon;
     document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
 }
 
 function updateForecast(forecastList) {
-    forecastGrid.innerHTML = ''; 
+    forecastGrid.innerHTML = '';
 
     const dailyForecasts = forecastList.filter(reading => reading.dt_txt.includes("12:00:00"));
 
