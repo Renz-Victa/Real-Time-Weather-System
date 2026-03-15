@@ -109,7 +109,9 @@ toggleBtn.addEventListener("click", () => {
     }
 });
 
-updateUnitButton();
+function updateUnitButton() {
+    unitToggle.textContent = unit === 'metric' ? '°F' : '°C';
+}
 
 unitToggle.addEventListener("click", () => {
     unit = unit === "metric" ? "imperial" : "metric";
