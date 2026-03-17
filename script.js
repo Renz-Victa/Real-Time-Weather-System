@@ -1,4 +1,4 @@
-const API_KEY = '';
+const API_KEY = 'a2ed6acd213609ad23e86b3fb2196c02 ';
 const BASE_URL = 'https://api.openweathermap.org/data/2.5';
 
 const cityInput = document.getElementById('city-input');
@@ -124,7 +124,7 @@ function updateCurrentWeather(data) {
     const unitLabel = unit === 'metric' ? '°C' : '°F';
 
     document.getElementById('city-name').textContent = `${data.name}, ${data.sys.country}`;
-    document.getElementById('date').textContent = new Date().toLocalDateString();
+    document.getElementById('date').textContent = new Date().toLocaleDateString();
     document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}${unitLabel}`;
     document.getElementById('description').textContent = data.weather[0].description;
     document.getElementById('humidity').textContent = `${data.main.humidity}%`;
@@ -142,8 +142,7 @@ function updateForecast(forecastList) {
     const dailyForecasts = forecastList.filter(r => r.dt_txt.includes('12:00:00'));
 
     dailyForecasts.forEach(dayData => {
-        const date = new Date(dayData.dt * 1000)
-            .toLocalDateString(undefined, { weekday: 'short', day: 'numeric' });
+        const date = new Date(dayData.dt * 1000).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
         const temp = Math.round(dayData.main.temp);
         const icon = dayData.weather[0].icon;
         const desc = dayData.weather[0].description;
