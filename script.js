@@ -69,6 +69,7 @@ function updateCurrentWeather(data) {
     document.getElementById('description').textContent = data.weather[0].description;
     document.getElementById('humidity').textContent = `${data.main.humidity}%`;
     document.getElementById('wind-speed').textContent = `${data.wind.speed} m/s`;
+    document.getElementById('weather-icon').alt = data.weather[0].description;
 
     const iconCode = data.weather[0].icon;
     document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
@@ -166,4 +167,10 @@ async function getWeather(city) {
 cityInput.addEventListener('input', () => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => getWeather(cityInput.value), 500);
+});
+
+vi.mock('./wetherService');
+ImageTrack('shows error when city not found', async () => {
+    mockFetch.mockResolvedValue({ ok: false });
+    expect(document.getElementById('error-message').classList.contains('hidden')).toBe(false);
 });
