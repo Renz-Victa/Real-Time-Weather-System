@@ -1,38 +1,38 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display&display=swap');
 
 :root {
-    --bg: white;
-    --bg-alt: white;
-    --surface: white;
+    --bg: #FAF7F2;
+    --bg-alt: #F3EFE8;
+    --surface: #FFFCF8;
     --border: rgba(60, 45, 30, 0.12);
     --border-strong: rgba(60, 45, 30, 0.22);
-    --text-color: black;
+    --text-color: #1C1A17;
     --text-muted: #7A7060;
     --text-faint: #B0A898;
-    --accent: black;
-    --accent-text: white;
+    --accent: #1C1A17;
+    --accent-text: #FAF7F2;
     --error: #C0392B;
-    --card-bg: white;
+    --card-bg: #FFFCF8;
     --radius-pill: 999px;
     --radius-card: 14px;
     --radius-sm: 8px;
     --transition: 0.22s ease;
     --font-body: 'DM Sans', 'Arial', sans-serif;
-    --font-display: 'DM Serif Display', Georgie, serif;
+    --font-display: 'DM Serif Display', Georgia, serif;
 }
 
 [data-theme="dark"] {
-    --bg: black;
-    --bg-alt: black;
-    --surface: black;
+    --bg: #141210;
+    --bg-alt: #1C1917;
+    --surface: #1F1C18;
     --border: rgba(255, 245, 230, 0.1);
     --border-strong: rgba(255, 245, 230, 0.2);
-    --text-color: white;
+    --text-color: #F5EFE4;
     --text-muted: #9E9080;
     --text-faint: #5A524A;
-    --accent: white;
-    --accent-text: black;
-    --card-bg: black;
+    --accent: #F5EFE4;
+    --accent-text: #141210;
+    --card-bg: #1F1C18;
 }
 
 html {
@@ -55,7 +55,7 @@ body {
     display: flex;
     flex-direction: column;
     margin: 0;
-    -webkit-font-smoothin: antialiased;
+    -webkit-font-smoothing: antialiased;
     transition: background var(--transition), color var(--transition);
 }
 
@@ -95,7 +95,7 @@ body {
     font-size: 0.875rem;
     font-weight: 400;
     padding: 0.4rem 0.85rem;
-    border-radius: var(--radisu-pill);
+    border-radius: var(--radius-pill);
     transition: color var(--transition), background var(--transition);
 }
 
@@ -105,7 +105,7 @@ body {
 }
 
 #themeToggle {
-    border: 1px soid var(--border);
+    border: 1px solid var(--border);
     border-radius: var(--radius-pill);
     background: transparent;
     color: var(--text-muted);
@@ -143,13 +143,13 @@ body {
 .Search {
     flex: 1;
     min-width: 180px;
-    padding: 0.7rem 1rem;
+    padding: 0.7rem 1.1rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-pill);
     background: var(--surface);
     color: var(--text-color);
     font-family: var(--font-body);
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 400;
     outline: none;
     transition: border-color var(--transition), box-shadow var(--transition);
@@ -171,7 +171,7 @@ body {
 #search-btn,
 #location-btn,
 #unitToggle {
-    padding: 0.7em 1.25rem;
+    padding: 0.7rem 1.25rem;
     border: 1px solid var(--accent);
     border-radius: var(--radius-pill);
     background: var(--accent);
@@ -185,7 +185,7 @@ body {
 }
 
 #search-btn:hover {
-    opacity: 0.80;
+    opacity: 0.82;
 }
 
 #location-btn,
@@ -209,9 +209,9 @@ body {
     color: var(--error);
     border: 1px solid rgba(192, 57, 43, 0.25);
     border-radius: var(--radius-sm);
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1.1rem;
     margin-bottom: 1.5rem;
-    background: rgba(192, 57, 43, 0, 04);
+    background: rgba(192, 57, 43, 0.04);
     letter-spacing: 0.01em;
 }
 
@@ -256,14 +256,38 @@ body {
 }
 
 .skeleton-desc {
-    height: 10px;
-    width: 30%;
+    height: 13px;
+    width: 28%;
 }
 
-.skeleton-strates {
+.skeleton-stats {
     display: flex;
     gap: 1.25rem;
     margin-top: 0.75rem;
+}
+
+.skeleton-stat {
+    height: 13px;
+    width: 90px;
+    margin-bottom: 0;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.weather-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    padding: 2rem 2rem 1.75rem;
+    margin-bottom: 1rem;
     transition: background var(--transition), border-color var(--transition);
 }
 
@@ -278,7 +302,7 @@ body {
 
 .weather-header h2 {
     font-family: var(--font-display);
-    font-family: 1.35rem;
+    font-size: 1.35rem;
     font-weight: 400;
     margin: 0;
     color: var(--text-color);
@@ -302,8 +326,8 @@ body {
 }
 
 .weather-body img {
-    width: 50px;
-    height: 50px;
+    width: 52px;
+    height: 52px;
     object-fit: contain;
     flex-shrink: 0;
     opacity: 0.9;
@@ -325,7 +349,7 @@ body {
     color: var(--text-muted);
     text-transform: capitalize;
     margin: 0;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.01em;
 }
 
 .weather-details {
@@ -337,7 +361,7 @@ body {
 
 .detail {
     display: flex;
-    flex-direction: flex;
+    flex-direction: column;
     gap: 0.2rem;
 }
 
@@ -389,7 +413,7 @@ body {
     background: var(--bg);
     text-align: center;
     transition: background var(--transition), border-color var(--transition);
-    cursor: pointer;
+    cursor: default;
 }
 
 .forecast-card:hover {
@@ -398,8 +422,8 @@ body {
 }
 
 .forecast-card img {
-    width: 35px;
-    height: 35px;
+    width: 34px;
+    height: 34px;
     object-fit: contain;
     opacity: 0.9;
 }
@@ -425,7 +449,7 @@ footer {
     padding: 2rem;
     font-size: 0.78rem;
     font-weight: 400;
-    letter-spacing: 0.4rem;
+    letter-spacing: 0.04em;
     color: var(--text-faint);
     border-top: 1px solid var(--border);
 }
@@ -460,7 +484,7 @@ footer {
     }
 
     .dashboard-container {
-        width: 90%;
+        width: 92%;
         margin: 2rem auto;
     }
 
@@ -482,7 +506,7 @@ footer {
         padding: 1.5rem 1.25rem;
     }
 
-    .navbar-header {
+    .weather-header {
         flex-direction: column;
         gap: 0.3rem;
     }
