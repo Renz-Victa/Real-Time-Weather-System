@@ -7,97 +7,57 @@ const errorMessage = document.getElementById('error-message');
 const currentWeatherSection = document.getElementById('current-weather');
 const forecastSection = document.getElementById('forecast-section');
 const forecastGrid = document.getElementById('forecast-grid');
-let unit = localStorage.getItem("unit") || "metric";
-const unitToggle = document.getElementById("unitToggle");
+const unitToggle = document.getElementById('unitToggle');
+const toggleBtn = document.getElementById('themeToggle');
+
+let unit = localStorage.getItem('unit') || 'metric';
 let currentController = null;
 let debounceTimer;
 
-searchBtn.addEventListener('click', () => getWeather(cityInput.value));
-cityInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') getWeather(cityInput.value);
-});
+updateUnitButton();
+
+const THEMES = {
+    dark: { bg: '#0f172a', color: '#e5e7eb' },
+    light: { bg: '#f5f7fa', color: '#111111' },
+};
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.body.style.backgroundColor = THEMES[theme].bg;
+    document.body.style.color = THEMES[theme].color;
+    localStorage.setItem('theme', theme);
+    toggleBtn.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    toggleBtn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+}
+
+applyTheme(localStorage.getItem('theme') || 'light');
 
 window.addEventListener('load', () => {
     const lastCity = localStorage.getItem('lastCity');
     if (lastCity) getWeather(lastCity);
 });
 
-async function getWeather(city) {
-    showSkeleton();
-    try {
-        updateCurrentWeather(data);
-    } catch (e) {
-        showError(e.message);
-    } finally {
-        hideSkeleton();
+searchBtn.addEventListener('click', () => getWeather(cityInput.value));
+
+
+cityInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        clearTimeout(debounceTimer);
+        getWeather(cityInput.value);
     }
+});
 
-    if (!city) return;
-
-    try {
-        errorMessage.classList.add('hidden');
-
-        const [weatherRes, forecastRes] = await Promise.all([
-            fetch(`${BASE_URL}/weather?q=${city}&units=${unit}&appid=${API_KEY}`),
-            fetch(`${BASE_URL}/forecast?q=${city}&units=${unit}&appid=${API_KEY}`),
-        ]);
-
-        if (!weatherRes.ok) throw new Error('City not found');
-        const weatherData = await weatherRes.json();
-
-        const unitLabel = unit === 'metric' ? '°C' : '°F';
-        document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}${unitLabel}`;
-        const forecastData = await forecastRes.json();
-
-        updateCurrentWeather(weatherData);
-        updateForecast(forecastData.list);
-
-        localStorage.setItem('lastCity', city);
-
-    } catch (error) {
-        showError(error.message);
-    }
-}
-
-function updateCurrentWeather(data) {
-    currentWeatherSection.classList.remove('hidden');
-    forecastSection.classList.remove('hidden');
-
-    document.getElementById('city-name').textContent = `${data.name}, ${data.sys.country}`;
-    document.getElementById('date').textContent = new Date().toLocaleDateString();
-    document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}°C`;
-    document.getElementById('description').textContent = data.weather[0].description;
-    document.getElementById('humidity').textContent = `${data.main.humidity}%`;
-    document.getElementById('wind-speed').textContent = `${data.wind.speed} m/s`;
-    document.getElementById('weather-icon').alt = data.weather[0].description;
-
-    const iconCode = data.weather[0].icon;
-    document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-}
-
-function updateForecast(forecastList) {
-    forecastGrid.innerHTML = '';
-
-    const dailyForecasts = forecastList.filter(reading => reading.dt_txt.includes("12:00:00"));
-
-    dailyForecasts.forEach(day => {
-        const date = new Date(day.dt * 1000).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
-        const temp = Math.round(day.main.temp);
-        const icon = day.weather[0].icon;
-
-        const card = document.createElement('div');
-        card.className = 'forecast-card';
-        card.innerHTML = `
-            <p>${date}</p>
-            <img src="https://openweathermap.org/img/wn/${icon}.png" alt="icon">
-            <p>${temp}°C</p>
-        `;
-        forecastGrid.appendChild(card);
-    });
-}
+cityInput.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => getWeather(cityInput.value), 500);
+});
 
 document.getElementById('location-btn').addEventListener('click', () => {
-    navigator.geolocatioon.getCurrentPosition(
+    if (!('geolocation' in navigator)) {
+        showError('Geolocation is not supported by your browser');
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
         async ({ coords }) => {
             const res = await fetch(
                 `${BASE_URL}/weather?lat=${coords.latitude}&lon=${coords.longitude}&units=${unit}&appid=${API_KEY}`
@@ -109,6 +69,106 @@ document.getElementById('location-btn').addEventListener('click', () => {
     );
 });
 
+toggleBtn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+unitToggle.addEventListener('click', () => {
+    unit = unit === 'metric' ? 'imperial' : 'metric';
+    localStorage.setItem('unit', unit);
+    updateUnitButton();
+    const city = localStorage.getItem('lastCity');
+    if (city) getWeather(city);
+});
+
+async function getWeather(city) {
+    if (!city.trim()) return;
+    if (currentController) currentController.abort();
+    currentController = new AbortController();
+    const { signal } = currentController;
+
+    showSkeleton();
+    errorMessage.classList.add('hidden');
+
+    try {
+        const [weatherRes, forecastRes] = await Promise.all([
+            fetch(`${BASE_URL}/weather?q=${city}&units=${unit}&appid=${API_KEY}`, { signal }),
+            fetch(`${BASE_URL}/forecast?q=${city}&units=${unit}&appid=${API_KEY}`, { signal }),
+        ]);
+
+        if (!weatherRes.ok) throw new Error('City not found. Check the spelling and try again');
+        if (!forecastRes.ok) throw new Error('Could not load forecast. Please try again');
+
+        const [weatherData, forecastData] = await Promise.all([
+            weatherRes.json(),
+            forecastRes.json(),
+        ]);
+
+        updateCurrentWeather(weatherData);
+        updateForecast(forecastData.list);
+
+        localStorage.setItem('lastCity', city);
+    } catch (error) {
+        if (error.name === 'AbortError') return;
+        showError(error.message);
+    } finally {
+        hideSkeleton();
+    }
+}
+
+function updateCurrentWeather(data) {
+    currentWeatherSection.classList.remove('hidden');
+    forecastSection.classList.remove('hidden');
+
+    const unitLabel = unit === 'metric' ? '°C' : '°F';
+
+    document.getElementById('city-name').textContent = `${data.name}, ${data.sys.country}`;
+    document.getElementById('date').textContent = new Date().toLocalDateString();
+    document.getElementById('temperature').textContent = `${Math.round(data.main.temp)}${unitLabel}`;
+    document.getElementById('description').textContent = data.weather[0].description;
+    document.getElementById('humidity').textContent = `${data.main.humidity}%`;
+    document.getElementById('wind-speed').textContent = `${data.wind.speed} m/s`;
+
+    const icon = document.getElementById('weather-icon');
+    icon.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+    icon.alt = data.weather[0].description;
+}
+
+function updateForecast(forecastList) {
+    forecastGrid.innerHTML = '';
+
+    const unitLabel = unit === 'metric' ? '°C' : '°F';
+    const dailyForecasts = forecastList.filter(r => r.dt_txt.includes('12:00:00'));
+
+    dailyForecasts.forEach(dayData => {
+        const date = new Date(dayData.dt * 1000)
+            .toLocalDateString(undefined, { weekday: 'short', day: 'numeric' });
+        const temp = Math.round(dayData.main.temp);
+        const icon = dayData.weather[0].icon;
+        const desc = dayData.weather[0].description;
+
+        const card = document.createElement('div');
+        card.className = 'forecast-card';
+        card.innerHTML = `
+         <p>${date}</p>
+         <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${desc}" loading="lazy">
+         <p>${temp}${unitLabel}</p>
+         `;
+        forecastGrid.appendChild(card);
+    });
+}
+
+function showSkeleton() {
+    document.getElementById('skeleton-screen')?.classList.remove('hidden');
+    currentWeatherSection.classList.add('hidden');
+    forecastSection.classList.add('hidden');
+}
+
+function hideSkeleton() {
+    document.getElementById('skeleton-screen')?.classList.add('hidden');
+}
+
 function showError(message) {
     errorMessage.textContent = message;
     errorMessage.classList.remove('hidden');
@@ -116,61 +176,6 @@ function showError(message) {
     forecastSection.classList.add('hidden');
 }
 
-const toggleBtn = document.getElementById("themeToggle");
-const currentTheme = localStorage.getItem("theme");
-
-if (currentTheme) {
-    document.documentElement.setAttribute("data-theme", currentTheme);
-    toggleBtn.textContent = currentTheme === "dark" ? "Light mode" : "Dark Mode";
-}
-
-toggleBtn.addEventListener("click", () => {
-    let theme = document.documentElement.getAttribute("data-theme");
-
-    if (theme === "dark") {
-        document.documentElement.setAttribute("data-theme", "light");
-        localStorage.setItem("theme", "light");
-        toggleBtn.textContent = "Dark Mode";
-    } else {
-        document.documentElement.setAttribute("data-theme", "dark");
-        localStorage.setItem("theme", "dark");
-        toggleBtn.textContent = "Light Mode";
-    }
-});
-
 function updateUnitButton() {
     unitToggle.textContent = unit === 'metric' ? '°F' : '°C';
 }
-
-unitToggle.addEventListener("click", () => {
-    unit = unit === "metric" ? "imperial" : "metric";
-    localStorage.setItem("unit", unit);
-    updateUnitButton();
-
-    const city = localStorage.getItem("lastCity");
-    if (city) {
-        getWeather(city);
-    }
-});
-
-async function getWeather(city) {
-    if (currentController) currentController.abort();
-    currentController = new AbortController();
-    const { signal } = currentController;
-
-    const [weatherRes, forecastRes] = await Promise.all([
-        fetch(`...`, { signal }),
-        fetch(`...`, { signal }),
-    ])
-}
-
-cityInput.addEventListener('input', () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => getWeather(cityInput.value), 500);
-});
-
-vi.mock('./wetherService');
-ImageTrack('shows error when city not found', async () => {
-    mockFetch.mockResolvedValue({ ok: false });
-    expect(document.getElementById('error-message').classList.contains('hidden')).toBe(false);
-});
