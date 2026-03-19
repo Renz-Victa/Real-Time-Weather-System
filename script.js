@@ -178,3 +178,15 @@ function showError(message) {
 function updateUnitButton() {
     unitToggle.textContent = unit === 'metric' ? '°F' : '°C';
 }
+
+// Exports for testing
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        showError,
+        updateUnitButton,
+        applyTheme,
+        getWeather,
+        get unit() { return unit; },
+        set unit(value) { unit = value; },
+    };
+}
