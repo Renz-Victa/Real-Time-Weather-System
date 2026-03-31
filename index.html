@@ -1,67 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Dashboard</title>
+    <meta name="description"
+        content="Real-time weather dashboard with temperature charts, precipitation graphs, weather alerts and notifications. Powered by Open-Meteo — free, no API key required.">
+    <title>Weather System</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="/images/Cawse Library.jpg" type="image/x-icon">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js — for temperature and precipitation graphs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
 </head>
 
 <body>
-    <header class="navbar">
-        <div class="logo">
-            LOGO
-        </div>
 
-        <nav>
-            <a href="#">Home</a>
+    <a href="#city-input" class="skip-link">Skip to search</a>
+
+    <!-- Alert banner — shown when weather alerts are detected -->
+    <div id="alert-banner" class="alert-banner hidden" role="alert" aria-live="assertive" aria-atomic="true">
+        <span id="alert-icon" class="alert-icon" aria-hidden="true">⚠</span>
+        <div class="alert-content">
+            <strong id="alert-title">Weather alert</strong>
+            <span id="alert-body"></span>
+        </div>
+        <button class="alert-close" id="alert-close" aria-label="Dismiss weather alert">✕</button>
+    </div>
+
+    <header class="navbar">
+        <div class="logo" role="img" aria-label="Atmos Weather Dashboard">Weather</div>
+        <nav aria-label="Main navigation">
+            <a href="#" aria-current="page">Home</a>
             <a href="#">About</a>
             <a href="#">Contact</a>
         </nav>
-
-        <button id="themeToggle">
-            Dark Mode
-        </button>
-
+        <div class="navbar-actions">
+            <!-- Notification bell — requests browser notification permission -->
+            <button id="notify-btn" class="notify-btn" aria-label="Enable weather notifications" aria-pressed="false"
+                title="Get notified about rain, storms, and severe weather">
+                <span id="notify-icon" aria-hidden="true">🔔</span>
+            </button>
+            <button id="themeToggle" aria-pressed="false" aria-label="Switch to dark mode">
+                Dark Mode
+            </button>
+        </div>
     </header>
 
     <div class="dashboard-container">
-        <div id="error-message" class="hidden">Error</div>
-        <header class="search-section">
-            <input class="Search" type="text" id="city-input" placeholder="Enter city name (e.g. Cape Town)">
+
+        <div id="error-message" class="hidden" role="alert" aria-live="assertive" aria-atomic="true"></div>
+        <div id="status-message" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+        <!-- Search -->
+        <div class="search-section" role="search" aria-label="Search for a city">
+            <label for="city-input" class="sr-only">City name</label>
+            <input class="Search" type="text" id="city-input" placeholder="Search city…" autocomplete="off"
+                autocorrect="off" spellcheck="false" aria-describedby="search-hint">
+            <span id="search-hint" class="sr-only">Type a city name and press Enter or click Search</span>
             <button id="search-btn">Search</button>
-            <button id="location-btn" aria-label="Use my current location">📍</button>
-            <button id="unitToggle">°F</button>
-        </header>
+            <button id="location-btn" aria-label="Use my current location">
+                <span aria-hidden="true">📍</span>
+            </button>
+            <button id="unitToggle" aria-label="Switch to Fahrenheit" aria-pressed="false">°F</button>
+        </div>
 
-        <main id="current-weather" class="weather-card hidden">
-            <div class="weather-header">
-                <h2 id="city-name">--</h2>
-                <p id="date">--</p>
+        <!-- Skeleton loader -->
+        <div id="skeleton-screen" class="hidden" aria-hidden="true">
+            <div class="skeleton-card">
+                <div class="skeleton-line skeleton-city"></div>
+                <div class="skeleton-line skeleton-temp"></div>
+                <div class="skeleton-line skeleton-desc"></div>
+                <div class="skeleton-stats">
+                    <div class="skeleton-line skeleton-stat"></div>
+                    <div class="skeleton-line skeleton-stat"></div>
+                    <div class="skeleton-line skeleton-stat"></div>
+                </div>
             </div>
-            <div class="weather-body">
-                <img id="weather-icon" src="" alt="Weather Icon">
-                <h1 id="temperature">--°C</h1>
-                <p id="description">--</p>
+            <div class="skeleton-card skeleton-forecast-card">
+                <div class="skeleton-line skeleton-forecast-row"></div>
             </div>
-            <div class="weather-details">
-                <div class="detail"><span>Humidity </span><span id="humidity">--%</span></div>
-                <div class="detail"><span>Wind </span><span id="wind-speed">-- m/s</span></div>
+            <div class="skeleton-card skeleton-chart-card">
+                <div class="skeleton-line skeleton-chart"></div>
             </div>
+        </div>
+
+        <main id="weather-main" aria-label="Weather information" aria-busy="false">
+
+            <!-- Current weather -->
+            <section id="current-weather" class="weather-card hidden" aria-labelledby="city-name">
+                <div class="weather-header">
+                    <div>
+                        <h2 id="city-name">--</h2>
+                        <p id="local-time" class="local-time">--</p>
+                    </div>
+                    <p id="date" aria-label="Today's date">--</p>
+                </div>
+                <div class="weather-body">
+                    <img id="weather-icon" src="" alt="" width="64" height="64">
+                    <div class="temp-group">
+                        <h1 id="temperature" aria-live="polite" aria-label="Temperature">--</h1>
+                        <p id="feels-like" class="feels-like">--</p>
+                    </div>
+                    <div class="condition-group">
+                        <p id="description" class="condition-text">--</p>
+                        <p id="temp-range" class="temp-range">--</p>
+                    </div>
+                </div>
+                <dl class="weather-details" aria-label="Weather details">
+                    <div class="detail">
+                        <dt>Humidity</dt>
+                        <dd id="humidity">--%</dd>
+                    </div>
+                    <div class="detail">
+                        <dt>Wind</dt>
+                        <dd id="wind-speed">--</dd>
+                    </div>
+                    <div class="detail">
+                        <dt>Pressure</dt>
+                        <dd id="pressure">--</dd>
+                    </div>
+                    <div class="detail">
+                        <dt>Visibility</dt>
+                        <dd id="visibility">--</dd>
+                    </div>
+                    <div class="detail">
+                        <dt>UV index</dt>
+                        <dd id="uv-index">--</dd>
+                    </div>
+                    <div class="detail">
+                        <dt>Wind dir.</dt>
+                        <dd id="wind-dir">--</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <!-- Hourly forecast scroll -->
+            <section id="hourly-section" class="forecast-container hidden" aria-label="Hourly forecast">
+                <h3 aria-hidden="true">Next 24 hours</h3>
+                <div class="hourly-scroll" role="list" aria-label="Hourly weather" id="hourly-grid"></div>
+            </section>
+
+            <!-- Temperature chart — 24-hour line graph -->
+            <section id="chart-section" class="forecast-container hidden" aria-label="Temperature chart">
+                <h3 aria-hidden="true">24-hour temperature</h3>
+                <div class="chart-wrap">
+                    <canvas id="temp-chart" aria-label="24-hour temperature chart" role="img"></canvas>
+                </div>
+            </section>
+
+            <!-- Precipitation chart — 24-hour bar graph -->
+            <section id="precip-section" class="forecast-container hidden" aria-label="Precipitation chart">
+                <h3 aria-hidden="true">Rain chance</h3>
+                <div class="chart-wrap chart-wrap-sm">
+                    <canvas id="precip-chart" aria-label="24-hour precipitation probability chart" role="img"></canvas>
+                </div>
+            </section>
+
+            <!-- 5-day forecast -->
+            <section id="forecast-section" class="forecast-container hidden" aria-label="5-day forecast">
+                <h3 aria-hidden="true">5-Day Forecast</h3>
+                <ul id="forecast-grid" class="forecast-grid" aria-label="Daily forecast"></ul>
+            </section>
+
         </main>
-
-        <section id="forecast-section" class="hidden">
-            <h3>5-Day Forecast</h3>
-            <div id="forecast-grid" class="forecast-grid">
-            </div>
-        </section>
     </div>
 
     <footer class="footer">
-        <p>@ 2026 Weather Dashboard | All Rights Reserved</p>
+        <p>
+            &copy; 2026 Weather System &nbsp;|&nbsp;
+            Powered by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>
+            &mdash; free &amp; open source
+        </p>
     </footer>
 
     <script src="script.js"></script>
